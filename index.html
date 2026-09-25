@@ -166,6 +166,9 @@ function showError(msg) {
 
 function renderChart() {
   try {
+    const loadingMsg = document.querySelector('#chart-container .loading-msg');
+    if (loadingMsg) loadingMsg.remove();
+
     if (!chart) {
       chart = new d3.OrgChart()
         .container('#chart-container')
