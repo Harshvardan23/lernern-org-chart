@@ -30,6 +30,12 @@ button.primary { background: var(--accent); color:white; border-color: var(--acc
 .node-card { width:100%; height:100%; background: var(--panel); border:1px solid var(--border);
   border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; flex-direction:column;
   justify-content:center; padding:8px 12px; }
+.node-card-with-photo { flex-direction:row; align-items:center; gap:10px; }
+.node-avatar-wrap { position:relative; width:44px; height:44px; flex-shrink:0; }
+.node-avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; display:block; }
+.node-avatar-fallback { width:44px; height:44px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; background: var(--accent); color:#fff; font-weight:600; font-size:14px; }
+.node-text { min-width:0; flex:1; }
 .node-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .node-pos { font-size:11px; color: var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .node-dept { display:inline-block; margin-top:4px; font-size:10px; color: var(--accent);
@@ -179,10 +185,17 @@ function renderChart() {
         .compactMarginPair(() => 40)
         .nodeContent((d) => {
           const dept = d.data.department ? ('<div class="node-dept">' + d.data.department + '</div>') : '';
-          return '<div class="node-card">'
+          const initials = d.data.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          const avatar = d.data.photo
+            ? '<div class="node-avatar-wrap"><img class="node-avatar" src="' + d.data.photo + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';" /><div class="node-avatar-fallback" style="display:none;">' + initials + '</div></div>'
+            : '<div class="node-avatar-fallback">' + initials + '</div>';
+          return '<div class="node-card node-card-with-photo">'
+            + avatar
+            + '<div class="node-text">'
             + '<div class="node-name">' + d.data.name + '</div>'
             + '<div class="node-pos">' + d.data.position + '</div>'
             + dept
+            + '</div>'
             + '</div>';
         });
     }
@@ -215,7 +228,8 @@ async function loadData() {
       parentId: (r.parentId || '').trim(),
       name: (r.name || '').trim(),
       position: (r.position || '').trim(),
-      department: (r.department || '').trim()
+      department: (r.department || '').trim(),
+      photo: (r.photo || '').trim()
     }));
 
     renderChart();
