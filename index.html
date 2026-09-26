@@ -36,6 +36,10 @@ button.primary { background: var(--accent); color:white; border-color: var(--acc
 .node-avatar-fallback { width:44px; height:44px; border-radius:50%; display:flex; align-items:center;
   justify-content:center; background: var(--accent); color:#fff; font-weight:600; font-size:14px; }
 .node-text { min-width:0; flex:1; }
+.status-dot { position:absolute; top:-2px; right:-2px; width:12px; height:12px; border-radius:50%; border:2px solid var(--panel); z-index:2; }
+.status-dot-leave { background:#dc2626; }
+.status-dot-wfh { background:#eab308; }
+.status-dot-office { background:#16a34a; }
 .node-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .node-pos { font-size:11px; color: var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .node-dept { display:inline-block; margin-top:4px; font-size:10px; color: var(--accent);
@@ -213,13 +217,17 @@ function renderChart() {
         .childrenMargin(() => 50)
         .compactMarginBetween(() => 25)
         .compactMarginPair(() => 40)
-                .onNodeClick((d) => showDetailPanel(d.data))
+                        .onNodeClick((d) => showDetailPanel(d.data))
         .nodeContent((d) => {
           const dept = d.data.department ? ('<div class="node-dept">' + d.data.department + '</div>') : '';
           const initials = d.data.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-          const avatar = d.data.photo
-            ? '<div class="node-avatar-wrap"><img class="node-avatar" src="' + d.data.photo + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';" /><div class="node-avatar-fallback" style="display:none;">' + initials + '</div></div>'
+          const statusMap = { leave: 'status-dot-leave', wfh: 'status-dot-wfh', office: 'status-dot-office' };
+          const statusClass = statusMap[(d.data.workStatus || '').toLowerCase()];
+          const statusDot = statusClass ? '<span class="status-dot ' + statusClass + '"></span>' : '';
+          const avatarInner = d.data.photo
+            ? '<img class="node-avatar" src="' + d.data.photo + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';" /><div class="node-avatar-fallback" style="display:none;">' + initials + '</div>'
             : '<div class="node-avatar-fallback">' + initials + '</div>';
+          const avatar = '<div class="node-avatar-wrap">' + avatarInner + statusDot + '</div>';
           return '<div class="node-card node-card-with-photo">'
             + avatar
             + '<div class="node-text">'
@@ -304,10 +312,11 @@ async function loadData() {
       position: (r.position || '').trim(),
       department: (r.department || '').trim(),
       photo: (r.photo || '').trim(),
-      mobile: (r.mobile || '').trim(),
+            mobile: (r.mobile || '').trim(),
       joiningDate: (r.joiningDate || '').trim(),
       dob: (r.dob || '').trim(),
-      bloodGroup: (r.bloodGroup || '').trim()
+      bloodGroup: (r.bloodGroup || '').trim(),
+      workStatus: (r.workStatus || '').trim()
     }));
 
     renderChart();
